@@ -52,6 +52,7 @@ module MCollective
     autoload :Applications, "mcollective/applications"
     autoload :Vendor, "mcollective/vendor"
     autoload :Shell, "mcollective/shell"
+    autoload :DispatchHandler, "mcollective/dispatch_handler"
 
     MCollective::Vendor.load_vendored
 

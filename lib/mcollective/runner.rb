@@ -95,10 +95,19 @@ module MCollective
 
         private
         # Deals with messages directed to agents
-        def agentmsg(msg, target, collective)
-            @agents.dispatch(msg, target, @connection) do |replies|
-                dest = Util.make_target(target, :reply, collective)
-                reply(target, dest, replies, msg[:requestid], msg[:callerid]) unless replies == nil
+         def agentmsg(msg, target, collective)
+            @agents.dispatch(msg, target, @connection) do |handler|
+
+                handler.replies do |replies|  
+                  dest = Util.make_target(target, :reply, collective)
+                  reply(target, dest, replies, msg[:requestid], msg[:callerid]) unless replies == nil
+                end
+
+                handler.progress do |replies| 
+                  dest = Util.make_target(target, :reply, collective)
+                  reply(target, dest, replies, msg[:requestid], msg[:callerid]) unless replies == nil
+                end
+
             end
         end
 

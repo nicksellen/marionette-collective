@@ -134,10 +134,17 @@ module MCollective
 
                     loop do
                         resp = receive(reqid)
+                        
+                        if resp[:body][:progress]
 
-                        hosts_responded += 1
+                          puts "#{resp[:senderid]}: #{resp[:body][:data][:message]}"
+                          
+                        else
 
-                        yield(resp)
+                          hosts_responded += 1
+                          yield(resp)
+                          
+                        end
 
                         break if (waitfor != 0 && hosts_responded >= waitfor)
                     end

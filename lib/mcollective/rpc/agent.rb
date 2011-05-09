@@ -146,6 +146,20 @@ module MCollective
                 end
             end
 
+            # set/get the progress handler block
+            def progress_handler(&block)
+              if block_given?
+                @progress_handler = block
+              else
+                @progress_handler
+              end
+            end
+
+            # send progress
+            def progress(data)
+              return unless @progress_handler              
+              @progress_handler.call(:data => data, :progress => true)
+            end
 
             private
             # Runs a command via the MC::Shell wrapper, options are as per MC::Shell
