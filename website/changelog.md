@@ -7,10 +7,34 @@ title: Changelog
  * TOC Placeholder
   {:toc}
 
+## Version 1.3.x
+
+|Date|Description|Ticket|
+|----|-----------|------|
+|2011/05/06|Revert unintended changes to the Debian rc script|7420|
+|2011/05/06|Remove the _test_ agent that was accidentally checked in|7425|
+
+## Version 1.2.x
+
+|Date|Description|Ticket|
+|----|-----------|------|
+|2011/05/06|Revert unintended changes to the Debian rc script|7420|
+|2011/05/06|Remove the _test_ agent that was accidentally checked in|7425|
+|*2011/05/04*|*Release 1.2.0*|7227|
+
 ## Version 1.1.x
 
 |Date|Description|Ticket|
 |----|-----------|------|
+|2011/05/03|Improve Red Hat RC script by using distro builtin functions|7340|
+|2011/05/01|Support setting a priority on Stomp messages|7246|
+|2011/04/30|Handle broken and incomplete DDLs better and improve the format of DDL output|7191|
+|2011/04/23|Encode the target agent and collective in requests|7223|
+|2011/04/20|Make the SSL Cipher used a config option|7191|
+|2011/04/20|Add a clear method to the PluginManager that deletes all plugins, improve test isolation|7176|
+|2011/04/19|Abstract the creation of request and reply hashes to simplify connector plugin development|5701|
+|2011/04/15|Improve the shellsafe validator and add a Util method to do shell escaping|7066|
+|2011/04/14|Update Rakefile to have a mail_patches task|6874|
 |2011/04/13|Update vendored systemu library for Ruby 1.9.2 compatability|7067|
 |2011/04/12|Fix failing tests on Ruby 1.9.2|7067|
 |2011/04/11|Update the DDL documentation to reflect the _mco help_ command|7042|

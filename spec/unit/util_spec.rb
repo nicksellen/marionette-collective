@@ -6,6 +6,31 @@ module MCollective
     describe Util do
         before do
             class MCollective::Connector::Stomp<MCollective::Connector::Base; end
+
+            PluginManager.clear
+            PluginManager << {:type => "connector_plugin", :class => MCollective::Connector::Stomp.new}
+        end
+
+        describe "#shellescape" do
+            it "should return '' for empty strings" do
+                Util.shellescape("").should == "''"
+            end
+
+            it "should quote newlines" do
+                Util.shellescape("\n").should == "'\n'"
+            end
+
+            it "should escape unwanted characters" do
+                Util.shellescape("foo;bar").should == 'foo\;bar'
+                Util.shellescape('foo`bar').should == 'foo\`bar'
+                Util.shellescape('foo$bar').should == 'foo\$bar'
+                Util.shellescape('foo|bar').should == 'foo\|bar'
+                Util.shellescape('foo&&bar').should == 'foo\&\&bar'
+                Util.shellescape('foo||bar').should == 'foo\|\|bar'
+                Util.shellescape('foo>bar').should == 'foo\>bar'
+                Util.shellescape('foo<bar').should == 'foo\<bar'
+                Util.shellescape('foobar').should == 'foobar'
+            end
         end
 
         describe "#make_target" do
@@ -212,6 +237,22 @@ module MCollective
             it "should parse equal to" do
                 Util.parse_fact_string("foo==bar").should == {:fact => "foo", :value => "bar", :operator => "=="}
                 Util.parse_fact_string("foo == bar").should == {:fact => "foo", :value => "bar", :operator => "=="}
+            end
+        end
+
+        describe "#parse_msgtarget" do
+            it "should correctly parse supplied targets based on config" do
+                Config.any_instance.stubs("topicsep").returns(".")
+                Config.any_instance.stubs("topicprefix").returns("/topic/")
+
+                Util.parse_msgtarget("/topic/mcollective.discovery.command").should == {:collective => "mcollective", :agent => "discovery"}
+            end
+
+            it "should raise an error on failure" do
+                Config.any_instance.stubs("topicsep").returns(".")
+                Config.any_instance.stubs("topicprefix").returns("/topic/")
+
+                expect { Util.parse_msgtarget("foo") }.to raise_error(/could not figure out agent and collective from foo/)
             end
         end
     end

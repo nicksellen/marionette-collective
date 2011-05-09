@@ -219,6 +219,39 @@ module MCollective
 
             return false
         end
+
+        # Escapes a string so it's safe to use in system() or backticks
+        #
+        # Taken from Shellwords#shellescape since it's only in a few ruby versions
+        def self.shellescape(str)
+            return "''" if str.empty?
+
+            str = str.dup
+
+            # Process as a single byte sequence because not all shell
+            # implementations are multibyte aware.
+            str.gsub!(/([^A-Za-z0-9_\-.,:\/@\n])/n, "\\\\\\1")
+
+            # A LF cannot be escaped with a backslash because a backslash + LF
+            # combo is regarded as line continuation and simply ignored.
+            str.gsub!(/\n/, "'\n'")
+
+            return str
+        end
+
+        # Parse the msgtarget as sent in 1.1.4 and newer to figure out the
+        # agent and collective that a request is targeted at
+        def self.parse_msgtarget(target)
+            sep = Regexp.escape(Config.instance.topicsep)
+            prefix = Regexp.escape(Config.instance.topicprefix)
+            regex = "#{prefix}(.+?)#{sep}(.+?)#{sep}command"
+
+            if target.match(regex)
+                return {:collective => $1, :agent => $2}
+            else
+                raise "Failed to handle message, could not figure out agent and collective from #{target}"
+            end
+        end
     end
 end
 
