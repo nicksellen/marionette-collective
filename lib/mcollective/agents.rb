@@ -100,7 +100,7 @@ module MCollective
                 begin
                     agent = PluginManager["#{target}_agent"]
 
-                    handler = DispatchHandler.new(&block)
+                    handler = ReplyHandler.new(&block)
                     
                     agent.progress_handler(&handler.progress) if agent.respond_to?(:progress_handler)
 

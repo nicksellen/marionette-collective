@@ -126,7 +126,7 @@ module MCollective
         #
         # It returns a hash of times and timeouts for discovery and total run is taken from the options
         # hash which in turn is generally built using MCollective::Optionparser
-        def req(body, agent, options=false, waitfor=0)
+        def req(body, agent, options=false, waitfor=0,&block)
             stat = {:starttime => Time.now.to_f, :discoverytime => 0, :blocktime => 0, :totaltime => 0}
 
             options = @options unless options
@@ -134,6 +134,8 @@ module MCollective
             STDOUT.sync = true
 
             hosts_responded = 0
+            
+            handler = ReplyHandler.new(&block)
 
             begin
                 Timeout.timeout(options[:timeout]) do
@@ -142,15 +144,13 @@ module MCollective
                     loop do
                         resp = receive(reqid)
                         
-                        if resp[:body][:progress]
-
-                          puts "#{resp[:senderid]}: #{resp[:body][:data][:message]}"
-                          
+                        is_progress = resp[:body][:progress]
+                        
+                        if is_progress                          
+                          handler.progress.call(resp) if handler.progress                     
                         else
-
                           hosts_responded += 1
-                          yield(resp)
-                          
+                          handler.replies.call(resp)                          
                         end
 
                         break if (waitfor != 0 && hosts_responded >= waitfor)
