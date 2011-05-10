@@ -256,9 +256,10 @@ module MCollective
                 # Now do a call pretty much exactly like in method_missing except with our own
                 # options and discovery magic
                 if block_given?
-                    call_agent(action, args, custom_options, [expected_agents].flatten) do |r|
-                        block.call(r)
-                    end
+                    call_agent(action, args, custom_options, [expected_agents].flatten,&block)
+                    # do |r|
+                    #    block.call(r)
+                    #end
                 else
                     call_agent(action, args, custom_options, [expected_agents].flatten)
                 end
@@ -451,20 +452,28 @@ module MCollective
                 result = []
                 respcount = 0
 
+                incoming_handler = ReplyHandler.new(&block)
+
                 if disc.size > 0
-                    @client.req(req, @agent, opts, disc.size) do |resp|
-                        respcount += 1
+                    @client.req(req, @agent, opts, disc.size) do |handler|
+                      
+                        handler.replies do |resp|
+                        
+                          respcount += 1
 
-                        if block_given?
-                            process_results_with_block(action, resp, block)
-                        else
-                            if @progress
-                                puts if respcount == 1
-                                print twirl.twirl(respcount, disc.size)
-                            end
+                          if block_given?
+                              process_results_with_block(action, resp, incoming_handler.replies)
+                          else
+                              if @progress
+                                  puts if respcount == 1
+                                  print twirl.twirl(respcount, disc.size)
+                              end
 
-                            result << process_results_without_block(resp, action)
+                              result << process_results_without_block(resp, action)
+                          end
                         end
+                        
+                        handler.progress(&incoming_handler.progress) if incoming_handler.progress
                     end
 
                     @stats.client_stats = @client.stats
