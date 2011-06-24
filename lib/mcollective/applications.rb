@@ -37,8 +37,9 @@ module MCollective
             end
 
             applist
-        rescue
-            return []
+        rescue Exception => e
+            STDERR.puts "Failed to generate application list: #{e.class}: #{e}"
+            exit 1
         end
 
         # Filters a string of opts out using Shellwords
@@ -57,6 +58,8 @@ module MCollective
                     return word
                 end
             end
+
+            return ""
         end
 
         # We need to know the config file in order to know the libdir

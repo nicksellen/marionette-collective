@@ -11,6 +11,21 @@ title: Changelog
 
 |Date|Description|Ticket|
 |----|-----------|------|
+|2011/06/07|Exceptions raised during option parsing were not handled and resulted in stack traces|7796|
+|2011/06/06|Remove the sshkey, it's being moved to the plugin repository|7794|
+|2011/06/02|Correct parsing of MCOLLECTIVE_EXTRA_OPTS in cases where no config related settings were set|7755|
+|2011/05/31|Disconnect from the middleware when an application calls exit|7712|
+|2011/05/29|Validations failure in RPC agents will now raise the correct exceptions as documented|7711|
+|2011/05/25|Make the target collective for registration messages configurable|7650|
+|2011/05/24|Rename the connector plugins send method to publish to avoid issues ruby Object#send|7623|
+|2011/05/23|Log a warning when the CF file parsing fails rather than raise a whole ruby exception|7627|
+|2011/05/23|Allow applications to use the exit method as would normally be expected|7626|
+|2011/05/22|Refactor subscribe and unsubscribe so that middleware structure is entirely contained in the connectors|7620|
+|2011/05/21|Add the ability for agents to programatically declare if they should work on a node|7583|
+|2011/05/20|Improve error reporting in the single application framework|7574|
+|2011/05/16|Allow _._ in fact names|7532|
+|2011/05/16|Fix compatability issues with RH4 init system|7448|
+|2011/05/15|Handle failures from remote nodes better in the inventory app|7524|
 |2011/05/06|Revert unintended changes to the Debian rc script|7420|
 |2011/05/06|Remove the _test_ agent that was accidentally checked in|7425|
 
@@ -18,6 +33,11 @@ title: Changelog
 
 |Date|Description|Ticket|
 |----|-----------|------|
+|2011/06/02|Correct parsing of MCOLLECTIVE_EXTRA_OPTS in cases where no config related settings were set|7755|
+|2011/05/23|Allow applications to use the exit method as would normally be expected|7626|
+|2011/05/16|Allow _._ in fact names|7532|
+|2011/05/16|Fix compatability issues with RH4 init system|7448|
+|2011/05/15|Handle failures from remote nodes better in the inventory app|7524|
 |2011/05/06|Revert unintended changes to the Debian rc script|7420|
 |2011/05/06|Remove the _test_ agent that was accidentally checked in|7425|
 |*2011/05/04*|*Release 1.2.0*|7227|

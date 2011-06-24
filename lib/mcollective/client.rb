@@ -54,15 +54,15 @@ module MCollective
             Log.debug("Sending request #{reqid} to #{target}")
 
             unless @subscriptions.include?(agent)
-                topic = Util.make_target(agent, :reply, collective)
-                Log.debug("Subscribing to #{topic}")
+                subscription = Util.make_subscriptions(agent, :reply, collective)
+                Log.debug("Subscribing to reply target for agent #{agent}")
 
-                Util.subscribe(topic)
+                Util.subscribe(subscription)
                 @subscriptions[agent] = 1
             end
 
             Timeout.timeout(2) do
-                @connection.send(target, req)
+                @connection.publish(target, req)
             end
 
             reqid

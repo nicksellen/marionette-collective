@@ -44,8 +44,7 @@ module MCollective
 
         # Starts the main loop, before calling this you should initialize the MCollective::Config singleton.
         def run
-            controltopics = Util.make_target("mcollective", :command)
-            Util.subscribe(controltopics)
+            Util.subscribe(Util.make_subscriptions("mcollective", :broadcast))
 
             # Start the registration plugin if interval isn't 0
             begin
@@ -157,7 +156,7 @@ module MCollective
         def reply(sender, target, msg, requestid, callerid)
             reply = @security.encodereply(sender, target, msg, requestid, callerid)
 
-            @connection.send(target, reply)
+            @connection.publish(target, reply)
 
             @stats.sent
         end

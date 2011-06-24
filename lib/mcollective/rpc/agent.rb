@@ -60,7 +60,8 @@ module MCollective
                 # and help generation
                 begin
                     @ddl = DDL.new(@agent_name)
-                rescue
+                rescue Exception => e
+                    Log.warn("Failed to load DDL for agent: #{e.class}: #{e}")
                     @ddl = nil
                 end
 
@@ -122,6 +123,38 @@ module MCollective
                     Log.debug("Client did not request a response, surpressing reply")
                     return nil
                 end
+            end
+
+            # By default RPC Agents support a toggle in the configuration that
+            # can enable and disable them based on the agent name
+            #
+            # Example an agent called Foo can have:
+            #
+            # plugin.foo.activate_agent = false
+            #
+            # and this will prevent the agent from loading on this particular
+            # machine.
+            #
+            # Agents can use the activate_when helper to override this for example:
+            #
+            # activate_when do
+            #    File.exist?("/usr/bin/puppet")
+            # end
+            def self.activate?
+                agent_name = self.to_s.split("::").last.downcase
+
+                Log.debug("Starting default activation checks for #{agent_name}")
+
+                should_activate = Config.instance.pluginconf["#{agent_name}.activate_agent"]
+
+                if should_activate
+                    Log.debug("Found plugin config #{agent_name}.activate_agent with value #{should_activate}")
+                    unless should_activate =~ /^1|y|true$/
+                        return false
+                    end
+                end
+
+                return true
             end
 
             # Generates help using the template based on the data
@@ -249,6 +282,18 @@ module MCollective
                 }
             end
 
+            # Creates the needed activate? class in a manner similar to the other
+            # helpers like action, authorized_by etc
+            #
+            # activate_when do
+            #    File.exist?("/usr/bin/puppet")
+            # end
+            def self.activate_when(&block)
+                (class << self; self; end).instance_eval do
+                    define_method("activate?", &block)
+                end
+            end
+
             # Creates a new action with the block passed and sets some defaults
             #
             # action "status" do
@@ -295,45 +340,41 @@ module MCollective
             # TODO: this should be plugins, 1 per validatin method so users can add their own
             #       at the moment i have it here just to proof the point really
             def validate(key, validation)
-                raise MissingRPCData, "please supply a #{key}" unless @request.include?(key)
+                raise MissingRPCData, "please supply a #{key} argument" unless @request.include?(key)
 
-                begin
-                    if validation.is_a?(Regexp)
-                        raise InvalidRPCData, "#{key} should match #{validation}" unless @request[key].match(validation)
+                if validation.is_a?(Regexp)
+                    raise InvalidRPCData, "#{key} should match #{validation}" unless @request[key].match(validation)
 
-                    elsif validation.is_a?(Symbol)
-                        case validation
-                            when :shellsafe
-                                raise InvalidRPCData, "#{key} should be a String" unless @request[key].is_a?(String)
+                elsif validation.is_a?(Symbol)
+                    case validation
+                        when :shellsafe
+                            raise InvalidRPCData, "#{key} should be a String" unless @request[key].is_a?(String)
 
-                                ['`', '$', ';', '|', '&&', '>', '<'].each do |chr|
-                                    raise InvalidRPCData, "#{key} should not have #{chr} in it" if @request[key].match(Regexp.escape(chr))
-                                end
+                            ['`', '$', ';', '|', '&&', '>', '<'].each do |chr|
+                                raise InvalidRPCData, "#{key} should not have #{chr} in it" if @request[key].match(Regexp.escape(chr))
+                            end
 
-                            when :ipv6address
-                                begin
-                                    require 'ipaddr'
-                                    ip = IPAddr.new(@request[key])
-                                    raise InvalidRPCData, "#{key} should be an ipv6 address" unless ip.ipv6?
-                                rescue
-                                    raise InvalidRPCData, "#{key} should be an ipv6 address"
-                                end
+                        when :ipv6address
+                            begin
+                                require 'ipaddr'
+                                ip = IPAddr.new(@request[key])
+                                raise InvalidRPCData, "#{key} should be an ipv6 address" unless ip.ipv6?
+                            rescue
+                                raise InvalidRPCData, "#{key} should be an ipv6 address"
+                            end
 
-                            when :ipv4address
-                                begin
-                                    require 'ipaddr'
-                                    ip = IPAddr.new(@request[key])
-                                    raise InvalidRPCData, "#{key} should be an ipv4 address" unless ip.ipv4?
-                                rescue
-                                    raise InvalidRPCData, "#{key} should be an ipv4 address"
-                                end
+                        when :ipv4address
+                            begin
+                                require 'ipaddr'
+                                ip = IPAddr.new(@request[key])
+                                raise InvalidRPCData, "#{key} should be an ipv4 address" unless ip.ipv4?
+                            rescue
+                                raise InvalidRPCData, "#{key} should be an ipv4 address"
+                            end
 
-                        end
-                    else
-                        raise InvalidRPCData, "#{key} should be a #{validation}" unless  @request[key].is_a?(validation)
                     end
-                rescue Exception => e
-                    raise UnknownRPCError, "Failed to validate #{key}: #{e}"
+                else
+                    raise InvalidRPCData, "#{key} should be a #{validation}" unless  @request[key].is_a?(validation)
                 end
             end
 
