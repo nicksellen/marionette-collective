@@ -200,4 +200,29 @@ task :mail_patches do
     # Finally, clean up the patches
     sh "rm 00*.patch"
 end
+
+desc "builds osx pkg"
+task :osx do
+  
+  unpacked_dir = File.dirname(__FILE__)
+  puts "Unpacked dir: #{unpacked_dir}"
+  
+  Dir.chdir('ext/osx') do
+    # fixup the dodgy BRUBYDIR var
+    site_ruby_dir = `ruby -rrbconfig -e "puts RbConfig::CONFIG['sitelibdir']"`.chomp
+    puts "Ruby site dir: #{site_ruby_dir}"
+    
+    puts "Setting BRUBYDIR"
+    site_ruby_dir_escaped = site_ruby_dir.gsub('/','\/').gsub('-','\-')
+    safe_system %{sed "s/^BRUBYDIR.*/BRUBYDIR='#{site_ruby_dir_escaped}'/g" bldmacpkg > bldmacpkg2}
+    
+    # fixup the dodgy line endings
+    puts "Fixing up line endings"
+    `tr '\15' '\n' < bldmacpkg2 > bldmacpkg3`
+    
+    # run it!
+    puts "Building package"
+    `bash bldmacpkg3 #{unpacked_dir}`
+  end  
+end
 # vi:tabstop=4:expandtab:ai
