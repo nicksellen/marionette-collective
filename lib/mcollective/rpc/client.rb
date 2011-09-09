@@ -455,7 +455,7 @@ module MCollective
                 incoming_handler = ReplyHandler.new(&block)
 
                 if disc.size > 0
-                    @client.req(req, @agent, opts, disc.size) do |handler|
+                    @client.req_with_handler(req, @agent, opts, disc.size) do |handler|
                       
                         handler.replies do |resp|
                         

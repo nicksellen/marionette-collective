@@ -223,6 +223,13 @@ task :osx do
     # run it!
     puts "Building package"
     `bash bldmacpkg3 #{unpacked_dir}`
+
   end  
+
+  # tell them where to do
+  puts "Packages have been made here:"
+  puts `find ext/osx -name "*.pkg"`
+
+  `open ext/osx`
 end
 # vi:tabstop=4:expandtab:ai
